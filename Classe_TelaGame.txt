@@ -1,0 +1,191 @@
+package snakegame;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class TelaGame extends JPanel implements ActionListener, KeyListener {
+    // Constantes para o tamanho da tela do jogo
+    private static final int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+    private static final int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
+    private static final int UNIT_SIZE = 20;
+    private static final int DELAY = 75;
+    private static final int GAME_WIDTH = 800;
+    private static final int GAME_HEIGHT = 800;
+
+    // Calcula as margens para centralizar a área de jogo
+    private static final int MARGIN_X = (SCREEN_WIDTH - GAME_WIDTH) / 2;
+    private static final int MARGIN_Y = (SCREEN_HEIGHT - GAME_HEIGHT) / 2;
+
+    // Objetos inseridos no jogo
+    private final Snake snake;
+    private final Apple apple;
+    private boolean running = false; // Indica se o jogo está em execução
+    private boolean isStartScreen = true; // Indica se está na tela de início
+    private Timer timer; // Timer para controle do jogo
+    private int score = 0; // Pontuação do jogo
+
+    // Botões
+    private JButton startButton;
+    private JButton restartButton;
+
+    // Imagens de fundo
+    private ImageIcon backgroundImageIcon;
+    private JLabel backgroundLabel;
+    private ImageIcon gameBackgroundImageIcon;
+    private Image gameBackgroundImage;
+
+    public TelaGame() {
+        // Configurações iniciais do painel
+        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        this.setLayout(null); // Layout absoluto
+        this.setFocusable(true);
+        this.addKeyListener(this);
+
+        // Inicializa a cobra e a maçã
+        snake = new Snake(UNIT_SIZE, GAME_WIDTH, GAME_HEIGHT, MARGIN_X, MARGIN_Y);
+        apple = new Apple(UNIT_SIZE, GAME_WIDTH, GAME_HEIGHT, MARGIN_X, MARGIN_Y);
+
+        // Configuração do botão de iniciar
+        startButton = new JButton("START");
+        startButton.setFont(new Font("Arial", Font.BOLD, 50)); // Define a fonte do botão
+        startButton.setForeground(Color.WHITE); // Define a cor da fonte do botão
+        startButton.setBackground(Color.BLACK); // Define a cor de fundo do botão
+        startButton.setOpaque(true); // Faz com que a cor de fundo seja visível
+        startButton.setBorderPainted(false); // Remove a borda do botão 
+        startButton.addActionListener(e -> startGame());
+        startButton.setBounds((SCREEN_WIDTH - 200) / 2 - 72, (SCREEN_HEIGHT - 100) / 2 + 70, 343, 85); // Define posições X e Y dos botões
+        startButton.setVisible(true); // Torna o botão visível
+        add(startButton); // Adiciona o botão ao painel
+
+        // Carrega a imagem de fundo da tela de início
+        backgroundImageIcon = new ImageIcon();
+        backgroundLabel = new JLabel(backgroundImageIcon);
+        backgroundLabel.setBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        add(backgroundLabel);
+
+        // Carrega a imagem de fundo do jogo
+        gameBackgroundImageIcon = new ImageIcon("C:\\Users\\valer\\Downloads\\Design sem nome (1).png");
+        gameBackgroundImage = gameBackgroundImageIcon.getImage();
+    }
+
+    // Método para iniciar o jogo
+    public void startGame() {
+        removeAll(); // Remove todos os componentes do painel
+        isStartScreen = false; // Indica que o jogo não está na tela de início
+        apple.newApple(); // Gera uma nova maçã
+        snake.reset(); // Reseta a cobra
+        running = true; // Define que o jogo está em execução
+        timer = new Timer(DELAY, this); // Inicializa o timer com o delay especificado
+        timer.start(); // Inicia o timer
+        score = 0; // Reseta a pontuação
+    }
+
+    // Método para desenhar a tela de início
+    public void drawStartScreen(Graphics g) {
+        ImageIcon imageIcon = new ImageIcon("C:\\Users\\valer\\Downloads\\Game (4).png");
+        Image image = imageIcon.getImage();
+        g.drawImage(image, 0, 0, this.getWidth(), this.getHeight(), null);
+    }
+
+    // Método para desenhar a tela de "Game Over"
+    public void gameOver(Graphics g) {
+        // Desenha a imagem de "Game Over"
+        ImageIcon gameOverImageIcon = new ImageIcon("C:\\Users\\valer\\Downloads\\Game (1).png");
+        Image gameOverImage = gameOverImageIcon.getImage();
+        g.drawImage(gameOverImage, 0, 0, this.getWidth(), this.getHeight(), this);
+
+        // Desenha a pontuação
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 44));
+        FontMetrics metrics2 = g.getFontMetrics();
+        g.drawString("" + score, (SCREEN_WIDTH - metrics2.stringWidth("" + score)) / 2 + 51, SCREEN_HEIGHT / 2 - 260);
+
+        // Adiciona botão de reiniciar
+        restartButton = new JButton("Reiniciar");
+        restartButton.addActionListener(e -> startGame());
+        restartButton.setBounds((SCREEN_WIDTH - 200) / 2, SCREEN_HEIGHT / 2 + 50, 200, 50);
+        add(restartButton);
+    }
+
+    // Método para desenhar componentes no painel
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (isStartScreen) {
+            drawStartScreen(g); // Desenha a tela de início se o jogo ainda não começou
+        } else if (running) {
+            draw(g); // Desenha o jogo se ele estiver em execução
+        } else {
+            gameOver(g); // Desenha a tela de Game Over se o jogo terminou
+        }
+    }
+
+    // Método para desenhar o jogo
+    public void draw(Graphics g) {
+        // Pinta a área fora da área de jogo com uma cor diferente
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Pinta a área do jogo com uma imagem de fundo ou outra cor
+        g.drawImage(gameBackgroundImage, MARGIN_X, MARGIN_Y, GAME_WIDTH, GAME_HEIGHT, this);
+
+        // Desenha a maçã
+        apple.draw(g, MARGIN_X, MARGIN_Y);
+
+        // Desenha a cobra
+        snake.draw(g, MARGIN_X, MARGIN_Y);
+
+        // Desenha a pontuação
+        g.setColor(Color.RED);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        FontMetrics metrics = g.getFontMetrics();
+        g.drawString("Score: " + score, (SCREEN_WIDTH - metrics.stringWidth("Score: " + score)) / 2, g.getFont().getSize());
+    }
+
+    // Método para mover a cobra
+    public void move() {
+        snake.move();
+    }
+
+    // Método para verificar se a cobra comeu a maçã
+    public void checkApple() {
+        if (snake.checkApple(apple.getX(), apple.getY())) {
+            score++; // Incrementa a pontuação
+            apple.newApple(); // Gera uma nova maçã
+        }
+    }
+
+    // Método para verificar colisões
+    public void checkCollisions() {
+        if (snake.checkCollisions()) {
+            running = false; // Para o jogo se houve colisão
+            timer.stop(); // Para o timer
+        }
+    }
+
+    // Método chamado quando uma tecla é pressionada
+    @Override
+    public void keyPressed(KeyEvent e) {
+        snake.changeDirection(e.getKeyCode());
+    }
+
+    // Métodos obrigatórios da interface KeyListener (não utilizados)
+    @Override
+    public void keyTyped(KeyEvent e) {}
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
+    // Método chamado pelo timer a cada DELAY milissegundos
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (running) {
+            move(); // Move a cobra
+            checkApple(); // Verifica se a cobra comeu a maçã
+            checkCollisions(); // Verifica colisões
+        }
+        repaint(); // Redesenha o painel
+    }
+}
+
+

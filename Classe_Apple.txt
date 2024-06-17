@@ -1,0 +1,47 @@
+package snakegame;
+
+import java.awt.*;
+import java.util.Random;
+
+public class Apple {
+    private int x;
+    private int y;
+    private final int unitSize;
+    private final int gameWidth;
+    private final int gameHeight;
+    private final int marginX;
+    private final int marginY;
+    private final Random random;
+
+    // Método Construtor
+    public Apple(int unitSize, int gameWidth, int gameHeight, int marginX, int marginY) {
+        this.unitSize = unitSize;
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
+        this.marginX = marginX;
+        this.marginY = marginY;
+        this.random = new Random();
+        newApple();
+    }
+
+    public void newApple() {
+        // Calcula as coordenadas para a maçã apenas dentro da área do jogo centralizada
+        x = random.nextInt(gameWidth / unitSize) * unitSize + marginX;
+        y = random.nextInt(gameHeight / unitSize) * unitSize + marginY;
+    }
+
+    public void draw(Graphics g, int offsetX, int offsetY) {
+        // Altera e insere a cor da maçã
+        g.setColor(Color.RED);
+        g.fillOval(x, y, unitSize, unitSize);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+}
+

@@ -1,0 +1,132 @@
+package snakegame;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+
+public class Snake {
+    private final int unitSize;
+    private final int[] x;
+    private final int[] y;
+    private int bodyParts = 6;
+    private char direction = 'R';
+    private final int gameWidth;
+    private final int gameHeight;
+    private final int marginX;
+    private final int marginY;
+
+    // Metodo Construtor
+    public Snake(int unitSize, int gameWidth, int gameHeight, int marginX, int marginY) {
+        this.unitSize = unitSize;
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
+        this.marginX = marginX;
+        this.marginY = marginY;
+        this.x = new int[(gameWidth * gameHeight) / (unitSize * unitSize)];
+        this.y = new int[(gameWidth * gameHeight) / (unitSize * unitSize)];
+        reset();
+    }
+
+    public void reset() {
+        bodyParts = 6; // Define o tamanho inicial do corpo da cobra
+        direction = 'R'; // Define a direção inicial que a cobra inicia
+        for (int i = 0; i < bodyParts; i++) { // Define a posição X e Y do corpo da cobra
+            x[i] = marginX + unitSize * (bodyParts - i);
+            y[i] = marginY + unitSize;
+        }
+    }
+
+    public void move() {
+    // Move cada parte do corpo da cobra para a posição da parte anterior
+    for (int i = bodyParts; i > 0; i--) { // Atualiaza a posição X e Y do corpo da cobra
+        x[i] = x[i - 1]; 
+        y[i] = y[i - 1]; 
+    }
+
+    // Move a cabeça da cobra na direção atual
+    switch (direction) {
+        case 'U': // Caso a direção seja para cima
+            y[0] -= unitSize; 
+            break;
+        case 'D': // Caso a direção seja para baixo
+            y[0] += unitSize;
+            break;
+        case 'L': // Caso a direção seja para a esquerda
+            x[0] -= unitSize;
+            break;
+        case 'R': // Caso a direção seja para a direita
+            x[0] += unitSize; 
+            break;
+    }
+}
+
+    public void draw(Graphics g, int MARGIN_X, int MARGIN_Y) {
+        // Desenha cada parte do corpo da cobra
+        for (int i = 0; i < bodyParts; i++) {
+            if (i == 0) {
+                g.setColor(Color.WHITE); // Define a cor da cabeça da cobra
+            } else {
+                g.setColor(Color.WHITE); // Define a cor do corpo da cobra
+            }
+            g.fillRect(x[i], y[i], unitSize, unitSize); // Desenha um retângulo na posição (x, y) com tamanho unitSize
+        }
+    }
+
+    public boolean checkApple(int appleX, int appleY) {
+        // Verifica se a cabeça da cobra está na mesma posição da maçã
+        if (x[0] == appleX && y[0] == appleY) {
+            bodyParts++; // Aumenta o tamanho do corpo da cobra
+            return true; // Retorna que a maçã foi comida
+        }
+        return false; // A maçã não foi comida
+    }
+
+    public boolean checkCollisions() {
+        // Checa colisão com as bordas do jogo, considerando a margem
+        if (x[0] >= marginX + gameWidth || x[0] < marginX || y[0] >= marginY + gameHeight || y[0] < marginY) {
+            return true; // Retorna colisão com a parede
+        }
+
+         // Checa colisão com o próprio corpo
+        for (int i = bodyParts; i > 0; i--) {
+            if (x[0] == x[i] && y[0] == y[i]) {
+                return true; // Retorna colisão com o corpo
+            }
+        }
+
+        return false; // Nenhuma colisão detectada
+    }
+
+        public void changeDirection(int keyCode) {
+        // Altera a direção da cobra com base na tecla pressionada(""WASD")
+        switch (keyCode) {
+            case KeyEvent.VK_LEFT: 
+            case KeyEvent.VK_A:    
+                if (direction != 'R') { // Não permite que a cobra vire para a direção oposta
+                    direction = 'L'; // Muda a direção para a esquerda
+                }
+                break;
+            case KeyEvent.VK_RIGHT: // Tecla direita
+            case KeyEvent.VK_D:     // Tecla D
+                if (direction != 'L') { 
+                    direction = 'R';
+                }
+                break;
+            case KeyEvent.VK_UP:    // Tecla para cima
+            case KeyEvent.VK_W:     // Tecla W
+                if (direction != 'D') { 
+                    direction = 'U'; 
+                }
+                break;
+            case KeyEvent.VK_DOWN:  // Tecla para baixo
+            case KeyEvent.VK_S:     // Tecla S
+                if (direction != 'U') { 
+                    direction = 'D';
+                }
+                break;
+            }
+        }
+    }
+
+
+
+
